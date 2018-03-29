@@ -659,6 +659,8 @@ message EthereumSignTx {
 	optional uint32 chain_id = 9;			// Chain Id for EIP 155
 	optional bytes TOKENticker = 10;
 	optional uint32 TOKENdecimals = 11;	
+	optional uint32 TOKENpublickeynumber = 12;	
+	optional bytes TOKENsignedfortickerhash = 13;	
 }
 
 /**
