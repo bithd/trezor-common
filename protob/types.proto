@@ -444,3 +444,36 @@ enum NEMImportanceTransferMode {
 	ImportanceTransfer_Activate = 1;
 	ImportanceTransfer_Deactivate = 2;
 }
+
+/**
+ * @used_in EOSActionType
+ */
+message EOSPermissionType {
+	required uint64 actor = 1;
+	required uint64 permission = 2; 
+}
+
+/**
+ * @used_in EOSTransactionType
+ */
+message EOSActionType {
+	required uint64 account = 1;
+	required uint64 name = 2;
+	repeated EOSPermissionType authorization = 3;
+	optional bytes data = 4;
+}
+
+/**
+ * @used_in EOSSignTx
+ */
+message EOSTransactionType {
+	required string expiration = 1;
+	required uint32 ref_block_num = 2;
+	required uint64 ref_block_prefix = 3;
+	required uint64 max_net_usage_words = 4;
+	required uint64 max_cpu_usage_ms = 5;
+	required uint64 delay_sec = 6;
+	repeated EOSActionType free_actions = 7;
+	repeated EOSActionType actions = 8;
+	repeated string transaction_extensions = 9;
+}
