@@ -466,16 +466,14 @@ message EOSActionType {
 /**
  * @used_in EOSSignTx
  */
- /*
 message EOSTransactionType {
-	required bytes expiration = 1;
+	required uint32 expiration = 1;
 	required uint32 ref_block_num = 2;
 	required uint64 ref_block_prefix = 3;
 	required uint64 max_net_usage_words = 4;
 	required uint64 max_cpu_usage_ms = 5;
 	required uint64 delay_sec = 6;
-	required bytes free_actions = 7;
-	required bytes actions = 8;
-	repeated bytes transaction_extensions = 9;
+	repeated EOSActionType free_actions = 7;
+	repeated EOSActionType actions = 8;
+	repeated string transaction_extensions = 9;
 }
-*/
