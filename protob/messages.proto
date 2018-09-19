@@ -54,8 +54,6 @@ enum MessageType {
 	MessageType_MessageSignature = 40 [(wire_out) = true];
 	MessageType_PassphraseRequest = 41 [(wire_out) = true];
 	MessageType_PassphraseAck = 42 [(wire_in) = true, (wire_tiny) = true];
-	MessageType_PassphraseStateRequest = 77 [(wire_out) = true];
-	MessageType_PassphraseStateAck = 78 [(wire_in) = true, (wire_tiny) = true];
 	MessageType_EstimateTxSize = 43 [(wire_in) = true, deprecated = true];
 	MessageType_TxSize = 44 [(wire_out) = true, deprecated = true];
 	MessageType_RecoveryDevice = 45 [(wire_in) = true];
@@ -88,12 +86,10 @@ enum MessageType {
 	MessageType_CosiCommitment = 72 [(wire_out) = true];
 	MessageType_CosiSign = 73 [(wire_in) = true];
 	MessageType_CosiSignature = 74 [(wire_out) = true];
-	MessageType_NEMDecryptMessage = 75 [(wire_in) = true];
-	MessageType_NEMDecryptedMessage = 76 [(wire_out) = true];
-	MessageType_EOSSignTx = 77 [(wire_in) = true];
-	MessageType_EOSTxRequest = 78 [(wire_out) = true];
-	MessageType_EOSTxAck = 79 [(wire_in) = true];
-	MessageType_EOSTxSignature = 80 [(wire_out) = true];
+	MessageType_EOSSignTx = 75 [(wire_in) = true];
+	MessageType_EOSTxRequest = 76 [(wire_out) = true];
+	MessageType_EOSTxAck = 77 [(wire_in) = true];
+	MessageType_EOSTxSignature = 78 [(wire_out) = true];
 	MessageType_DebugLinkDecision = 100 [(wire_debug_in) = true, (wire_tiny) = true];
 	MessageType_DebugLinkGetState = 101 [(wire_debug_in) = true];
 	MessageType_DebugLinkState = 102 [(wire_debug_out) = true];
@@ -114,7 +110,6 @@ enum MessageType {
  * @next Features
  */
 message Initialize {
-	optional bytes state = 1;			// assumed device state, clear session if set and different
 }
 
 /**
@@ -130,10 +125,10 @@ message GetFeatures {
  * @prev GetFeatures
  */
 message Features {
-	optional string vendor = 1;			// name of the manufacturer, e.g. "trezor.io"
-	optional uint32 major_version = 2;		// major version of the firmware/bootloader, e.g. 1
-	optional uint32 minor_version = 3;		// minor version of the firmware/bootloader, e.g. 0
-	optional uint32 patch_version = 4;		// patch version of the firmware/bootloader, e.g. 0
+	optional string vendor = 1;			// name of the manufacturer, e.g. "bitcointrezor.com"
+	optional uint32 major_version = 2;		// major version of the device, e.g. 1
+	optional uint32 minor_version = 3;		// minor version of the device, e.g. 0
+	optional uint32 patch_version = 4;		// patch version of the device, e.g. 0
 	optional bool bootloader_mode = 5;		// is device in bootloader mode?
 	optional string device_id = 6;			// device's unique identifier
 	optional bool pin_protection = 7;		// is device protected by PIN?
@@ -150,13 +145,6 @@ message Features {
 	optional bool firmware_present = 18;		// is valid firmware loaded?
 	optional bool needs_backup = 19;		// does storage need backup? (equals to Storage.needs_backup)
 	optional uint32 flags = 20;			// device flags (equals to Storage.flags)
-	optional string model = 21;			// device hardware model
-	optional uint32 fw_major = 22;			// reported firmware version if in bootloader mode
-	optional uint32 fw_minor = 23;			// reported firmware version if in bootloader mode
-	optional uint32 fw_patch = 24;			// reported firmware version if in bootloader mode
-	optional string fw_vendor = 25;			// reported firmware vendor if in bootloader mode
-	optional bytes fw_vendor_keys = 26;		// reported firmware vendor keys (their hash)
-	optional bool unfinished_backup = 27;		// report unfinished backup (equals to Storage.unfinished_backup)
 }
 
 /**
@@ -178,7 +166,6 @@ message ApplySettings {
 	optional string label = 2;
 	optional bool use_passphrase = 3;
 	optional bytes homescreen = 4;
-	optional PassphraseSourceType passphrase_source = 5;
 }
 
 /**
@@ -274,31 +261,14 @@ message Cancel {
  * @next Cancel
  */
 message PassphraseRequest {
-	optional bool on_device = 1;		// passphrase is being entered on the device
 }
 
 /**
  * Request: Send passphrase back
  * @prev PassphraseRequest
- * @next PassphraseStateRequest
  */
 message PassphraseAck {
-	optional string passphrase = 1;
-	optional bytes state = 2;		// expected device state
-}
-
-/**
- * @prev PassphraseAck
- * @next PassphraseStateAck
- */
-message PassphraseStateRequest {
-	optional bytes state = 1;		// actual device state
-}
-
-/**
- * @prev PassphraseStateRequest
- */
-message PassphraseStateAck {
+	required string passphrase = 1;
 }
 
 /**
@@ -631,7 +601,6 @@ message SignTx {
 	optional string coin_name = 3 [default='Bitcoin'];	// coin to use
 	optional uint32 version = 4 [default=1];		// transaction version
 	optional uint32 lock_time = 5 [default=0];		// transaction lock_time
-	optional uint32 decred_expiry = 6;
 }
 
 /**
@@ -694,7 +663,10 @@ message EthereumSignTx {
 	optional bytes data_initial_chunk = 7;		// The initial data chunk (<= 1024 bytes)
 	optional uint32 data_length = 8;		// Length of transaction payload
 	optional uint32 chain_id = 9;			// Chain Id for EIP 155
-	optional uint32 tx_type = 10;			// (only for Wanchain)
+	optional bytes TOKENticker = 10;
+	optional uint32 TOKENdecimals = 11;	
+	optional uint32 TOKENpublickeynumber = 12;	
+	optional bytes TOKENsignedfortickerhash = 13;	
 }
 
 /**
@@ -908,26 +880,6 @@ message NEMSignedTx {
 	optional bytes signature = 2;	// Signature for the transaction
 }
 
-/**
- * Request: Ask device to decrypt NEM transaction payload
- * @next NEMDecryptedMessage
- * @next Failure
- */
-message NEMDecryptMessage {
-	repeated uint32 address_n = 1;			// BIP-32 path to derive the key from master node
-	optional uint32 network = 2;			// Network ID (0x68 = Mainnet, 0x98 = Testnet, 0x60 = Mijin)
-	optional bytes public_key = 3;			// Public key of the other party
-	optional bytes payload = 4;			// Actual message data (encrypted)
-}
-
-/**
- * Response: Contains decrypted NEM transaction payload
- * @prev NEMDecryptMessage
- */
-message NEMDecryptedMessage {
-	optional bytes payload = 1;			// Actual message data (unencrypted)
-}
-
 ///////////////////
 // CoSi messages //
 ///////////////////
@@ -1036,9 +988,7 @@ message EOSTxSignature {
  * @next Success
  */
 message DebugLinkDecision {
-	optional bool yes_no = 1;			// true for "Confirm", false for "Cancel"
-	optional bool up_down = 2;			// true for scroll up, false for scroll down
-	optional string input = 3;			// keyboard input
+	required bool yes_no = 1;			// true for "Confirm", false for "Cancel"
 }
 
 /**
@@ -1063,7 +1013,6 @@ message DebugLinkState {
 	optional bytes reset_entropy = 8;		// current entropy during ResetDevice workflow
 	optional string recovery_fake_word = 9;		// (fake) word on display during RecoveryDevice workflow
 	optional uint32 recovery_word_pos = 10;		// index of mnemonic word the device is expecting during RecoveryDevice workflow
-	optional uint32 reset_word_pos = 11;		// index of mnemonic word the device is expecting during ResetDevice workflow
 }
 
 /**
