@@ -90,6 +90,10 @@ enum MessageType {
 	MessageType_CosiSignature = 74 [(wire_out) = true];
 	MessageType_NEMDecryptMessage = 75 [(wire_in) = true];
 	MessageType_NEMDecryptedMessage = 76 [(wire_out) = true];
+	MessageType_EOSSignTx = 77 [(wire_in) = true];
+	MessageType_EOSTxRequest = 78 [(wire_out) = true];
+	MessageType_EOSTxAck = 79 [(wire_in) = true];
+	MessageType_EOSTxSignature = 80 [(wire_out) = true];
 	MessageType_DebugLinkDecision = 100 [(wire_debug_in) = true, (wire_tiny) = true];
 	MessageType_DebugLinkGetState = 101 [(wire_debug_in) = true];
 	MessageType_DebugLinkState = 102 [(wire_debug_out) = true];
@@ -965,6 +969,62 @@ message CosiSign {
  */
 message CosiSignature {
 	optional bytes signature = 1;		// Signature
+}
+
+///////////////////
+// EOS messages //
+///////////////////
+
+/**
+ * Request: Ask device to sign transaction
+ * @next PinMatrixRequest
+ * @next EOSTxResponse
+ * @next EOSTxRequest
+ * @next Failure
+ */
+message EOSSignTx {
+	repeated uint32 address_n = 1;			// BIP-32 path to derive the key from master node
+	optional bytes chain_id = 2;
+	required uint32 expiration = 3;
+	required uint32 ref_block_num = 4;
+	required uint32 ref_block_prefix = 5;
+	required uint64 max_net_usage_words = 6;
+	required uint64 max_cpu_usage_ms = 7;
+	required uint64 delay_sec = 8;
+	optional bytes free_actions = 9;
+	optional bytes actions = 10;
+	repeated bytes transaction_extensions = 11;
+}
+
+/**
+ * @prev EOSSignTx
+ * @next EOSTxAck
+ */
+message EOSTxRequest {
+	optional uint32 action_index = 1;
+	optional uint64 action_name = 2;
+	optional uint32 data_length = 3;		// Number of bytes being requested (<= 1024)
+}
+
+/**
+ * Request: Transaction payload data.
+ * @prev EOSSignTx
+ * @next EOSSignTx
+ * @next EOSTxSignature
+ */
+ message EOSTxAck {
+	optional bytes data = 1;			// Bytes from transaction payload (<= 1024 bytes)
+}
+
+/**
+ * Response: Contains a Eos tx signature
+ * @prev EOSSignTx
+ * @prev EOSTxAck
+ */
+message EOSTxSignature {
+	optional uint32 signature_v = 1;		// Computed signature (recovery parameter, limited to 27 or 28)
+	optional bytes signature_r = 2;			// Computed signature R component (256 bit)
+	optional bytes signature_s = 3;			// Computed signature S component (256 bit)
 }
 
 /////////////////////////////////////////////////////////////
