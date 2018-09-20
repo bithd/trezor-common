@@ -90,6 +90,9 @@ enum MessageType {
 	MessageType_EOSTxRequest = 76 [(wire_out) = true];
 	MessageType_EOSTxAck = 77 [(wire_in) = true];
 	MessageType_EOSTxSignature = 78 [(wire_out) = true];
+	MessageType_EthereumSignGenerateMultisigContract = 79 [(wire_in) = true];
+	MessageType_EthereumSignSubmitMultisigTx = 80 [(wire_in) = true];
+	MessageType_EthereumSignConfirmMultisigTx = 81 [(wire_in) = true];
 	MessageType_DebugLinkDecision = 100 [(wire_debug_in) = true, (wire_tiny) = true];
 	MessageType_DebugLinkGetState = 101 [(wire_debug_in) = true];
 	MessageType_DebugLinkState = 102 [(wire_debug_out) = true];
@@ -667,6 +670,59 @@ message EthereumSignTx {
 	optional uint32 TOKENdecimals = 11;	
 	optional uint32 TOKENpublickeynumber = 12;	
 	optional bytes TOKENsignedfortickerhash = 13;	
+}
+
+/**
+ * Request: Ask device to sign generate multisig contract transaction
+ * @next PinMatrixRequest
+ * @next EthereumTxRequest
+ * @next Failure
+ */
+message EthereumSignGenerateMultisigContract {
+	repeated uint32 address_n = 1;				// BIP-32 path to derive the key form master node
+	required bytes nonce =2;					// <=256 bit unsigned big endian
+	required bytes gas_price = 3;				// <=256 bit unsigned big endian (in wei)
+	required bytes gas_limit = 4;				// <=256 bit unsigned big endian
+	repeated bytes oweners = 5;					// 160 bit address hash array
+	required uint32 threshold = 6;
+}
+
+/**
+ * Request: Ask device to sign submit multisig transaction
+ * @next PassphraseRequest
+ * @next PinMatrixRequest
+ * @next EthereumTxRequest
+ * @next Failure
+ */
+message EthereumSignSubmitMultisigTx {
+	repeated uint32 address_n = 1;				// BIP-32 path to derive the key from master node
+	optional bytes nonce = 2;					// <=256 bit unsigned big endian
+	optional bytes gas_price = 3;				// <=256 bit unsigned big endian (in wei)
+	optional bytes gas_limit = 4;				// <=256 bit unsigned big endian
+	optional bytes multisig_address = 5;		// 160 bit address hash
+	optional bytes to = 6;						// 160 bit address hash
+	optional bytes value = 7;					// <=256 bit unsigned big endian (in wei)
+	optional bytes data_initial_chunk = 8;		// The initial data chunk (<= 1024 bytes)
+	optional uint32 data_length = 9;			// Length of transaction payload
+	optional uint32 chain_id = 10;				// Chain Id for EIP 155
+	optional bytes TOKENticker = 11;
+	optional uint32 TOKENdecimals = 12;	
+	optional uint32 TOKENpublickeynumber = 13;	
+	optional bytes TOKENsignedfortickerhash = 14;	
+}
+
+/**
+ * Request: Ask device to sign confirm multisig transaction
+ * @next PinMatrixRequest
+ * @next EthereumTxRequest
+ * @next Failure
+ */
+message EthereumSignConfirmMultisigTx {
+	repeated uint32 address_n = 1;				// BIP-32 path to derive the key from master node
+	optional bytes nonce = 2;					// <=256 bit unsigned big endian
+	optional bytes gas_price = 3;				// <=256 bit unsigned big endian (in wei)
+	optional bytes gas_limit = 4;				// <=256 bit unsigned big endian
+	required uint32 multisig_tx_id = 5;	
 }
 
 /**
