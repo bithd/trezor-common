@@ -685,6 +685,7 @@ message EthereumSignGenerateMultisigContract {
 	required bytes gas_limit = 4;				// <=256 bit unsigned big endian
 	repeated bytes owners = 5;					// 160 bit address hash array
 	required uint32 threshold = 6;
+	optional uint32 chain_id = 7;				// Chain Id for EIP 155
 }
 
 /**
@@ -723,6 +724,10 @@ message EthereumSignConfirmMultisigTx {
 	optional bytes gas_price = 3;				// <=256 bit unsigned big endian (in wei)
 	optional bytes gas_limit = 4;				// <=256 bit unsigned big endian
 	required uint32 multisig_tx_id = 5;	
+	optional bytes multisig_address = 6;		// 160 bit address hash
+	optional uint32 chain_id = 7;				// Chain Id for EIP 155
+	optional bytes to = 8;						// 160 bit address hash
+	optional bytes value = 9;					// <=256 bit unsigned big endian (in wei)
 }
 
 /**
