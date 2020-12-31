@@ -1059,8 +1059,9 @@ message EOSTxSignature {
 message TronSignMessage {
 	repeated uint32 address_n = 1;				// BIP-32 path to derive the key from master node
 	required bytes message = 2;				// message to be signed
-	required bool is_text = 3;				// message is text?
-	optional string prompt = 4;				// prompt for the message to be signed
+	required bool do_hash = 3;				// message need do hash?
+	required bool is_text = 4;				// message is text?
+	optional string prompt = 5;				// prompt for the message to be signed
 }
 
 /**
