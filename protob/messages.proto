@@ -1066,7 +1066,7 @@ message TronSignMessage {
 
 /**
  * Response: Signed message
- * @prev TronMessageSignature
+ * @prev TronSignMessage
  */
 message TronMessageSignature {
 	optional bytes address = 1;				// address used to sign the message
