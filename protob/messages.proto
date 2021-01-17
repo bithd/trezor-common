@@ -104,6 +104,14 @@ enum MessageType {
 	MessageType_DebugLinkMemory = 111 [(wire_debug_out) = true];
 	MessageType_DebugLinkMemoryWrite = 112 [(wire_debug_in) = true];
 	MessageType_DebugLinkFlashErase = 113 [(wire_debug_in) = true];
+
+    // TRON
+    MessageType_TronGetAddress = 250 [(wire_in) = true];
+    MessageType_TronAddress = 251 [(wire_out) = true];
+    // MessageType_TronSignTx = 252 [(wire_in) = true];
+    // MessageType_TronSignedTx = 253 [(wire_out) = true];
+    MessageType_TronSignRawTx = 254 [(wire_in) = true];
+	MessageType_TronSignature = 255 [(wire_out) = true];
 }
 
 ////////////////////
@@ -1157,4 +1165,41 @@ message DebugLinkMemoryWrite {
  */
 message DebugLinkFlashErase {
 	optional uint32 sector = 1;
+}
+
+/**
+ * Request: Ask device for Tron address corresponding to address_n path
+ * @start
+ * @next TronAddress
+ * @next Failure
+ */
+message TronGetAddress {
+    repeated uint32 address_n = 1;  // BIP-32 path to derive the key from master node
+    optional bool show_display = 2; // Optionally show on display before sending the result
+}
+
+/**
+ * Response: Contains Tron address derived from device private seed
+ * @end
+ */
+message TronAddress {
+	required string address = 1;		// Coin address in Base58 encoding
+}
+
+/**
+ * Request: Ask device to sign Tron transaction
+ * @start
+ * @next TronSignature
+ */
+message TronSignRawTx {
+	repeated uint32 address_n = 1;				// BIP-32 path to derive the key from master node
+	required bytes raw_tx = 2;				// raw transaction to be signed
+}
+
+/**
+ * Response: Tron Signature
+ * @prev TronSignRawTx
+ */
+message TronSignature {
+	required bytes signature = 1;				// signature of the message
 }
